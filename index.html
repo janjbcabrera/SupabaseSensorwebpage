@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background-color: #3ecf8e; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📡 Live Sensor Data</h2>
+    <div class="card">
+        <button onclick="fetchData()">Refresh Data</button>
+        <table id="sensor-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Sensor</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="data-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // 1. Initialize Supabase
+    const SUPABASE_URL = 'https://iqdfxyghfgvxuzodinqt.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxZGZ4eWdoZmd2eHV6b2RpbnF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NDcyMTYsImV4cCI6MjA4NzMyMzIxNn0.K9GY5KDLzN-dSU7a947vqG72DBgDmzXYz_MzbCxrJdU';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. Fetch Function
+    async function fetchData() {
+        const { data, error } = await supabase
+            .from('sensor_data')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching data:', error);
+            return;
+        }
+
+        renderTable(data);
+    }
+
+    // 3. Render Function
+    function renderTable(data) {
+        const tbody = document.getElementById('data-body');
+        tbody.innerHTML = ''; // Clear current rows
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(row.created_at).toLocaleString()}</td>
+                <td>${row.sensor_name}</td>
+                <td><strong>${row.value}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Initial load
+    fetchData();
+</script>
+
+</body>
+</html>
